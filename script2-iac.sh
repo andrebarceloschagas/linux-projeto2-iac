@@ -12,7 +12,7 @@ apt-get install unzip -y
 
 echo "Baixando o arquivo do site..."
 cd /tmp
-wget https://github.com/desilsonbonatti/linux-site-dio/archive/refs/heads/main.zip
+wget https://github.com/denilsonbonatti/linux-site-dio/archive/refs/heads/main.zip
 
 echo "Descompactando o arquivo..."
 unzip main.zip

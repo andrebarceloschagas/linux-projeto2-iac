@@ -57,7 +57,7 @@ Copiando os arquivos para o diretório do Apache...
 
 ## Observações
 
-* **Site Específico**: O script está configurado para baixar e implantar o site do repositório `https://github.com/desilsonbonatti/linux-site-dio`.
+* **Site Específico**: O script está configurado para baixar e implantar o site do repositório `https://github.com/denilsonbonatti/linux-site-dio`.
 * **Sobrescrita**: O script **sobrescreverá** qualquer conteúdo existente no diretório `/var/www/html/`. Tenha cuidado ao executar em um servidor que já hospeda outros sites nesse local.
 * **Não Interativo**: O uso da flag `-y` nos comandos `apt-get` assume "sim" para todas as perguntas, tornando a execução automática.
 

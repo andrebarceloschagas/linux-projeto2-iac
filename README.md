@@ -6,12 +6,17 @@ Este projeto contém um script Bash (`script2-iac.sh`) para automatizar a config
 
 O script realiza as seguintes operações automaticamente:
 
-1.  **Atualização do Sistema**: Atualiza a lista de pacotes e os pacotes instalados (`apt-get update -y`, `apt-get upgrade -y`).
-2.  **Instalação do Apache2**: Instala o servidor web Apache (`apt-get install apache2 -y`).
-3.  **Instalação do Unzip**: Instala a ferramenta `unzip` necessária para descompactar arquivos (`apt-get install unzip -y`).
-4.  **Download do Site**: Baixa um arquivo `.zip` contendo os arquivos de um site a partir de um repositório GitHub (`wget ...`).
-5.  **Descompactação**: Extrai o conteúdo do arquivo `.zip` baixado (`unzip main.zip`).
-6.  **Deploy do Site**: Copia os arquivos extraídos do site para o diretório raiz padrão do Apache (`/var/www/html/`), substituindo qualquer conteúdo existente.
+1.  **Verificação de Root**: Garante que o script seja executado com privilégios de superusuário.
+2.  **Tratamento de Erros**: Utiliza `set -e` para que o script saia imediatamente se qualquer comando falhar.
+3.  **Atualização do Sistema**: Atualiza a lista de pacotes e os pacotes instalados (`apt-get update -y`, `apt-get upgrade -y`).
+4.  **Instalação de Pacotes Essenciais**: Instala o servidor web Apache (`apache2`), a ferramenta de descompactação (`unzip`) e a ferramenta de sincronização de arquivos (`rsync`) com `apt-get install apache2 unzip rsync -y`.
+5.  **Criação de Diretório Temporário**: Cria um diretório temporário único (ex: `/tmp/web_deploy_$$`) para isolar os arquivos de download e descompactação.
+6.  **Download do Site**: Baixa um arquivo `.zip` (de forma silenciosa com `wget -q`) contendo os arquivos de um site a partir de um repositório GitHub.
+7.  **Descompactação**: Extrai o conteúdo do arquivo `.zip` baixado (de forma silenciosa com `unzip -q`) no diretório temporário.
+8.  **Verificação do Conteúdo**: Confirma se o diretório esperado do site foi criado após a descompactação.
+9.  **Deploy do Site**: Copia os arquivos extraídos do site para o diretório raiz padrão do Apache (`/var/www/html/`) usando `rsync -avh --delete`. A opção `--delete` remove arquivos do destino que não existem na origem, garantindo uma sincronização limpa.
+10. **Limpeza Segura**: Remove o diretório temporário e seu conteúdo após a conclusão do deploy.
+11. **Logs Detalhados**: Fornece mensagens de log informativas sobre o progresso de cada etapa.
 
 ## Pré-requisitos
 
@@ -35,25 +40,44 @@ O script realiza as seguintes operações automaticamente:
 
 ## Estrutura do Script
 
-O script segue uma ordem lógica:
-* Atualização inicial do sistema.
-* Instalação das dependências (Apache2, unzip).
-* Download e descompactação dos arquivos do site.
-* Cópia (deploy) dos arquivos do site para o diretório web.
+O script segue uma ordem lógica e organizada em seções:
+
+*   Verificação de privilégios de root.
+*   Definição de `set -e` para sair em caso de erro.
+*   Atualização inicial do sistema.
+*   Instalação das dependências (Apache2, unzip, rsync).
+*   Criação e navegação para um diretório temporário seguro.
+*   Download (silencioso) dos arquivos do site.
+*   Descompactação (silenciosa) dos arquivos do site.
+*   Verificação da existência do diretório do site descompactado.
+*   Cópia (deploy) dos arquivos do site para o diretório web usando `rsync` (com deleção de arquivos não existentes na origem).
+*   Limpeza segura do diretório temporário.
+*   Mensagem de finalização.
 
 ## Exemplo de Saída
 
 Ao executar o script, você verá mensagens indicando o progresso das operações, como:
 
 ```
+Iniciando o provisionamento do servidor web Apache e deploy do site...
 Atualizando o sistema...
-Instalando o Apache2...
-Instalando o unzip...
+Sistema atualizado.
+Instalando pacotes: Apache2, Unzip, Rsync...
+Pacotes essenciais instalados.
+Criando diretório temporário: /tmp/web_deploy_...
+Diretório temporário alterado para: /tmp/web_deploy_...
 Baixando o arquivo do site...
-Descompactando o arquivo...
-Copiando os arquivos para o diretório do Apache...
+Arquivo do site baixado em /tmp/web_deploy_.../main.zip.
+Descompactando o arquivo do site...
+Arquivo descompactado em /tmp/web_deploy_....
+Verificando a existência do diretório do site: linux-site-dio-main...
+Diretório linux-site-dio-main encontrado. Copiando os arquivos do site para o diretório do Apache...
+Site copiado para /var/www/html/.
+Limpando arquivos temporários de /tmp/web_deploy_......
+Limpeza concluída.
+Provisionamento do servidor web e deploy do site concluídos com sucesso!
 ```
-*(Nota: A saída real incluirá também as mensagens dos comandos `apt-get`, `wget`, `unzip`, `cp`)*
+*(Nota: A saída real incluirá também as mensagens dos comandos `apt-get` se não forem totalmente suprimidas, e `rsync` detalhando os arquivos transferidos.)*
 
 ## Observações
 
@@ -68,4 +92,3 @@ Este projeto foi desenvolvido por [@andrebarceloschagas](github.com/andrebarcelo
 ## Licença
 
 Este projeto está licenciado sob a MIT License (ou ajuste conforme sua preferência).
-```
